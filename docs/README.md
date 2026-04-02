@@ -101,13 +101,22 @@ python models/part1/regression.py       # 回归任务
 python models/part1/classification.py   # BP 分类任务
 python models/part2/cnn.py              # CNN 分类任务
 
+# 消融实验
+python ablation/ablation_part1/run_ablation_part1.py
+python ablation/ablation_part2/run_ablation_part2.py
+
 # 参数对比实验（与消融实验结构一致，分 part1/part2）
 python contrast/run_contrast_all.py --task all --epochs-part1 150 --epochs-part2 100 
 python contrast/contrast_part1/run_contrast_part1.py
 python contrast/contrast_part2/run_contrast_part2.py
 ```
 
-说明：`ablation/*` 与 `contrast/*` 都采用同构输出：每个 variant 子目录下含 `metrics.csv` 与 `summary.json`，根目录含 `leaderboard.csv` 与 `summary_all.json`。运行 `train/run_all.py`、`ablation/ablation_part*/run_*.py`、`contrast/run_contrast_all.py` 或 `contrast/contrast_part*/run_*.py` 时，会自动在对应的 `train/train_log/`、`ablation/logs/`、`contrast/logs/` 下生成日志文件。
+说明：
+
+- `ablation/*` 与 `contrast/*` 都采用同构输出：每个 variant 子目录下含 `metrics.csv` 与 `summary.json`，根目录含 `leaderboard.csv` 与 `summary_all.json`
+- 运行 `train/run_all.py` 时，会自动生成 `train/train_log/train_part1.log`、`train/train_log/train_part2.log`
+- 运行 `ablation/ablation_part1/run_ablation_part1.py`、`ablation/ablation_part2/run_ablation_part2.py` 时，会自动生成 `ablation/logs/ablation_part1.log`、`ablation/logs/ablation_part2.log`
+- 运行 `contrast/run_contrast_all.py` 或对应 part 脚本时，会自动生成 `contrast/logs/contrast_part1.log`、`contrast/logs/contrast_part2.log`
 
 结果（训练曲线、混淆矩阵、模型权重）保存在各目录的 `results/` 文件夹下。
 

@@ -27,10 +27,12 @@
 
 建议阅读顺序：
 
-1. [docs/README.md](/home/lzx/my_workspace/ai_lab/2026_pj1_release/docs/README.md)
-2. [docs/lab_report.md](/home/lzx/my_workspace/ai_lab/2026_pj1_release/docs/lab_report.md)
-3. [train/run_all.py](/home/lzx/my_workspace/ai_lab/2026_pj1_release/train/run_all.py)
-4. [contrast/run_contrast_all.py](/home/lzx/my_workspace/ai_lab/2026_pj1_release/contrast/run_contrast_all.py)
+1. [PJ1.pdf](/home/lzx/my_workspace/ai_lab/2026_pj1_release/PJ1.pdf)
+2. [docs/README.md](/home/lzx/my_workspace/ai_lab/2026_pj1_release/docs/README.md)
+3. [docs/lab_report.md](/home/lzx/my_workspace/ai_lab/2026_pj1_release/docs/lab_report.md)
+4. [train/run_all.py](/home/lzx/my_workspace/ai_lab/2026_pj1_release/train/run_all.py)
+5. [ablation/ablation_part1/run_ablation_part1.py](/home/lzx/my_workspace/ai_lab/2026_pj1_release/ablation/ablation_part1/run_ablation_part1.py)、[ablation/ablation_part2/run_ablation_part2.py](/home/lzx/my_workspace/ai_lab/2026_pj1_release/ablation/ablation_part2/run_ablation_part2.py)
+6. [contrast/run_contrast_all.py](/home/lzx/my_workspace/ai_lab/2026_pj1_release/contrast/run_contrast_all.py)
 
 常用入口：
 
