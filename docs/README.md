@@ -3,7 +3,7 @@
 ## 项目结构
 
 ```
-2026_pj1_release/
+2026-H-PJ1/
 ├── datasets/
 │   └── train_data/train/{1..12}/*.bmp   # 训练数据（解压后）
 ├── models/
@@ -74,45 +74,47 @@ python -c "import torch; print(torch.__version__); print(torch.cuda.get_device_n
 ## 数据准备
 
 ```bash
-cd 2026_pj1_release
-mkdir -p datasets/train_data && bsdtar xf train_data.rar -C datasets/train_data
+cd /home/lzx/my_workspace/2026-H-PJ1
+mkdir -p datasets
+unzip train_data.zip -d datasets
+mv datasets/train_data_update_03-31_v2 datasets/train_data
 ```
-
-解压后目录结构应为 `datasets/train_data/train/1/`, `datasets/train_data/train/2/`, ..., `datasets/train_data/train/12/`。
 
 ---
 
 ## 运行命令
 
 ```bash
-cd 2026_pj1_release
+cd /home/lzx/my_workspace/2026-H-PJ1
 
-# 只跑第一部分（BP，纯 numpy，无需 GPU）
+# 推荐复现顺序：先消融确定组件，再做参数对比，最后跑主训练
+python ablation/ablation_part1/run_ablation_part1.py
+python contrast/contrast_part1/run_contrast_part1.py
+python ablation/ablation_part2/run_ablation_part2.py
+python contrast/contrast_part2/run_contrast_part2.py
+python train/run_all.py
+
+# 也可使用总入口统一跑参数对比
+python contrast/run_contrast_all.py --task all
+
+# 如果只想直接运行主训练
 python train/run_all.py --part 1
-
-# 只跑第二部分（CNN，建议 GPU）
 python train/run_all.py --part 2
-
-# 全部运行
 python train/run_all.py
 
 # 也可单独运行各脚本
-python models/part1/regression.py       # 回归任务
-python models/part1/classification.py   # BP 分类任务
-python models/part2/cnn.py              # CNN 分类任务
+python models/part1/regression.py
+python models/part1/classification.py
+python models/part2/cnn.py
 
-# 消融实验
-python ablation/ablation_part1/run_ablation_part1.py
-python ablation/ablation_part2/run_ablation_part2.py
-
-# 参数对比实验（与消融实验结构一致，分 part1/part2）
-python contrast/run_contrast_all.py --task all --epochs-part1 150 --epochs-part2 100 
+# 单独运行参数对比
 python contrast/contrast_part1/run_contrast_part1.py
 python contrast/contrast_part2/run_contrast_part2.py
 ```
 
 说明：
 
+- 本仓库采用“先消融、后调参、再最终训练”的复现逻辑；主训练脚本中的默认配置来自前述实验结论
 - `ablation/*` 与 `contrast/*` 都采用同构输出：每个 variant 子目录下含 `metrics.csv` 与 `summary.json`，根目录含 `leaderboard.csv` 与 `summary_all.json`
 - 运行 `train/run_all.py` 时，会自动生成 `train/train_log/train_part1.log`、`train/train_log/train_part2.log`
 - 运行 `ablation/ablation_part1/run_ablation_part1.py`、`ablation/ablation_part2/run_ablation_part2.py` 时，会自动生成 `ablation/logs/ablation_part1.log`、`ablation/logs/ablation_part2.log`
@@ -141,7 +143,7 @@ python contrast/contrast_part2/run_contrast_part2.py
 
 - 目标：12 类手写汉字分类
 - 网络结构：`[784, 512, 256, 128, 12]`
-- 激活函数：ReLU（隐藏层）+ Softmax（输出层）
+- 激活函数：LeakyReLU（隐藏层）+ Softmax（输出层）
 - 损失函数：Cross-Entropy
 - 正则化：L2 weight decay
 - 学习率调度：每 30 轮 × 0.7
@@ -184,7 +186,7 @@ FC(256→12)
 |---|---|
 | 优化器 | AdamW |
 | 学习率调度 | Cosine Annealing |
-| 正则化 | Dropout(0.5) + BatchNorm（Bonus：防过拟合）；默认 `weight_decay=0` |
+| 正则化 | Dropout(0.5) + BatchNorm（Bonus：防过拟合）；默认 `weight_decay=1e-4` |
 | 损失函数 | Cross-Entropy + 标签平滑（label_smoothing=0.1） |
 | 数据增强 | 随机水平翻转 + 随机仿射变换（旋转±10°、平移±10%、缩放0.9~1.1） |
 | 训练轮数 | 100 epochs |

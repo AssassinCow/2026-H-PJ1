@@ -1,9 +1,9 @@
-# 2026 PJ1 Release
+# 2026-H-PJ1
 
 项目当前按“代码 / 数据 / 文档 / 实验产物”四类组织：
 
 ```text
-2026_pj1_release/
+2026-H-PJ1/
 ├── models/                    # 训练代码
 │   ├── part1/                 # numpy BP：回归 + 分类
 │   └── part2/                 # PyTorch CNN
@@ -27,25 +27,47 @@
 
 建议阅读顺序：
 
-1. [PJ1.pdf](/home/lzx/my_workspace/ai_lab/2026_pj1_release/PJ1.pdf)
-2. [docs/README.md](/home/lzx/my_workspace/ai_lab/2026_pj1_release/docs/README.md)
-3. [docs/lab_report.md](/home/lzx/my_workspace/ai_lab/2026_pj1_release/docs/lab_report.md)
-4. [train/run_all.py](/home/lzx/my_workspace/ai_lab/2026_pj1_release/train/run_all.py)
-5. [ablation/ablation_part1/run_ablation_part1.py](/home/lzx/my_workspace/ai_lab/2026_pj1_release/ablation/ablation_part1/run_ablation_part1.py)、[ablation/ablation_part2/run_ablation_part2.py](/home/lzx/my_workspace/ai_lab/2026_pj1_release/ablation/ablation_part2/run_ablation_part2.py)
-6. [contrast/run_contrast_all.py](/home/lzx/my_workspace/ai_lab/2026_pj1_release/contrast/run_contrast_all.py)
+1. [PJ1.pdf](/home/lzx/my_workspace/2026-H-PJ1/PJ1.pdf)
+2. [docs/README.md](/home/lzx/my_workspace/2026-H-PJ1/docs/README.md)
+3. [docs/lab_report.md](/home/lzx/my_workspace/2026-H-PJ1/docs/lab_report.md)
+4. [train/run_all.py](/home/lzx/my_workspace/2026-H-PJ1/train/run_all.py)
+5. [ablation/ablation_part1/run_ablation_part1.py](/home/lzx/my_workspace/2026-H-PJ1/ablation/ablation_part1/run_ablation_part1.py)、[ablation/ablation_part2/run_ablation_part2.py](/home/lzx/my_workspace/2026-H-PJ1/ablation/ablation_part2/run_ablation_part2.py)
+6. [contrast/run_contrast_all.py](/home/lzx/my_workspace/2026-H-PJ1/contrast/run_contrast_all.py)
 
 常用入口：
 
 ```bash
-# 主训练
+# 推荐复现顺序：先消融，再参数对比，最后主训练
+python ablation/ablation_part1/run_ablation_part1.py
+python contrast/contrast_part1/run_contrast_part1.py
+python ablation/ablation_part2/run_ablation_part2.py
+python contrast/contrast_part2/run_contrast_part2.py
+
+# 最后再跑主训练
 python train/run_all.py
 
-# 消融实验
-python ablation/ablation_part1/run_ablation_part1.py
-python ablation/ablation_part2/run_ablation_part2.py
-
-# 参数对比
+# 也可使用总入口串行跑完参数对比
 python contrast/run_contrast_all.py --task all
+
+# 如果只想直接跑主训练
+python train/run_all.py
+```
+
+数据准备（当前仓库）：
+
+```bash
+mkdir -p datasets
+unzip train_data.zip -d datasets
+mv datasets/train_data_update_03-31_v2 datasets/train_data
+```
+
+`train_data.zip` 内部自带顶层目录 `train_data_update_03-31_v2/`，整理后目录应为：
+
+```text
+datasets/train_data/train/1/
+datasets/train_data/train/2/
+...
+datasets/train_data/train/12/
 ```
 
 说明：

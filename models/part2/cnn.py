@@ -230,8 +230,8 @@ def run(data_dir: str = DEFAULT_DATA_DIR):
     # ---- 超参数 ----
     BATCH     = 64
     EPOCHS    = 100
-    LR        = 2e-3      # 最新对比结果: 峰值并列最优且末轮更高
-    WD        = 0.0       # 最新消融默认选择 no_weight_decay
+    LR        = 1e-3      # 最新对比结果: 与 2e-3 并列最优，leaderboard 排名更高
+    WD        = 1e-4      # 最新消融默认选择 full
     DROPOUT   = 0.5       # Bonus：防过拟合
 
     train_loader, val_loader = get_dataloaders(data_dir, batch_size=BATCH)

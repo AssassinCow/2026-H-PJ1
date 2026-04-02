@@ -5,7 +5,6 @@ __pycache__/
 # OS/editor noise
 .DS_Store
 .ipynb_checkpoints/
-.codex
 
 # Training / experiment artifacts
 datasets/

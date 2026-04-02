@@ -179,14 +179,14 @@ datasets/train_data/train/<class_id>/*.bmp
 - 不做水平翻转
 - `np.roll` 的 ±2 像素平移
 
-说明：根据最新 BP 消融结果，默认配置已切换为 `bp_base`，即关闭翻转、保留平移增强；消融脚本中的“可控开关翻转 + 零填充平移 `translate_with_padding`”仍用于实验分析。
+说明：根据最新 BP 消融结果，默认配置已切换为 `bp_leaky_relu`，即关闭翻转、保留平移增强，并将隐藏层激活切换为 `LeakyReLU`；消融脚本中的“可控开关翻转 + 零填充平移 `translate_with_padding`”仍用于实验分析。
 
 #### 3.3.3 网络与训练流程
 
 BP 分类模型采用：
 
 - 结构：`[784, 512, 256, 128, 12]`
-- 激活：隐藏层 `ReLU`，输出层 `Softmax`
+- 激活：隐藏层 `LeakyReLU`，输出层 `Softmax`
 - 损失：交叉熵
 - 优化：SGD + Momentum
 - 正则：L2 weight decay
@@ -209,8 +209,8 @@ BP 分类模型采用：
 最新主模型训练日志（`train/train_log/train_part1.log`）结果为：
 
 - 训练配置：`epochs=150, batch_size=128`
-- 最优验证准确率：`96.67%`
-- 末轮验证准确率：`96.1%`（epoch 150）
+- 最优验证准确率：`96.76%`
+- 末轮验证准确率：`95.3%`（epoch 150）
 
 #### 3.3.5 BP 消融实验
 
@@ -225,8 +225,8 @@ BP 分类模型采用：
 
 | 配置 | 最优验证准确率 | 达峰 epoch |
 |---|---:|---:|
-| `bp_base`：`flip=False, shift=2, relu, wd=1e-4` | `97.21%` | 145 |
-| `bp_leaky_relu`：激活改为 `leaky_relu` | `97.12%` | 135 |
+| `bp_leaky_relu`：`flip=False, shift=2, leaky_relu, wd=1e-4` | `97.21%` | 135 |
+| `bp_base`：激活改为 `relu` | `97.12%` | 144 |
 | `bp_no_wd`：去掉权重衰减 | `97.03%` | 150 |
 | `bp_flip_on`：开启水平翻转 | `96.67%` | 129 |
 | `bp_no_shift`：不做平移增强 | `91.37%` | 47 |
@@ -235,10 +235,10 @@ BP 分类模型采用：
 
 1. 平移增强对 BP 模型最重要，去掉平移后准确率下降最明显；
 2. 水平翻转会带来性能下降，但降幅小于“去掉平移增强”；
-3. 最新重跑结果中，`bp_base` 略高于 `bp_leaky_relu`，因此默认主模型保留 `relu`；
+3. 最新重跑结果中，`bp_leaky_relu` 以 `97.21%` 略高于 `bp_base` 的 `97.12%`，因此默认主模型切换为 `LeakyReLU`；
 4. 权重衰减影响较小，去掉后峰值仅略降。
 
-补充：本次 5 组 BP 消融总耗时约 `245.69s`（约 `4.09` 分钟）。
+补充：本次 5 组 BP 消融总耗时约 `236.31s`（约 `3.94` 分钟）。
 
 #### 3.3.6 BP 参数对比实验
 
@@ -248,19 +248,19 @@ BP 分类模型采用：
 - 对比参数：`learning_rate ∈ {5e-3, 1e-2, 2e-2}`
 - `epochs=150`
 - `batch_size=128`
-- 其余设置与主模型保持一致：`ReLU + Softmax`、`weight_decay=1e-4`、`momentum=0.9`
+- 其余设置与主模型保持一致：`LeakyReLU + Softmax`、`weight_decay=1e-4`、`momentum=0.9`
 
 结果如下（来自 `contrast/contrast_part1/contrast_results_part1/leaderboard.csv`）：
 
 | 学习率 | 最优验证准确率 | 达峰 epoch | 末轮验证准确率 |
 |---|---:|---:|---:|
-| `1e-2` | `97.12%` | 123 | `96.76%` |
-| `2e-2` | `96.31%` | 135 | `95.86%` |
+| `1e-2` | `97.03%` | 150 | `97.03%` |
+| `2e-2` | `96.85%` | 133 | `96.40%` |
 | `5e-3` | `95.86%` | 146 | `95.41%` |
 
-可见在最新 BP 基线配置下，`1e-2` 同时取得最高峰值与最高末轮验证准确率，因此优于 `2e-2` 与 `5e-3`。
+可见在最新 BP 基线配置下，`1e-2` 同时取得最高峰值与最高末轮验证准确率，并且在第 150 轮仍保持上升到最优，因此优于 `2e-2` 与 `5e-3`。
 
-基于这一结果，代码仓库中 `models/part1/classification.py` 的默认学习率调整为 `1e-2`；同时根据最新消融结果，主模型默认配置切换为 `bp_base`（`flip=False, shift=2, relu, wd=1e-4`）。
+基于这一结果，代码仓库中 `models/part1/classification.py` 的默认学习率调整为 `1e-2`；同时根据最新消融结果，主模型默认配置切换为 `bp_leaky_relu`（`flip=False, shift=2, leaky_relu, wd=1e-4`）。
 
 #### 3.3.7 结果分析
 
@@ -380,14 +380,14 @@ FC(256→12)
 
 | 配置 | 最优验证准确率 |
 |---|---:|
-| `no_weight_decay` | `99.91%`（epoch 59） |
-| `no_dropout` | `99.82%`（epoch 49） |
+| `full` | `99.82%`（epoch 59） |
+| `no_aug` | `99.82%`（epoch 73） |
+| `no_dropout` | `99.82%`（epoch 59） |
+| `no_weight_decay` | `99.82%`（epoch 68） |
 | `no_scheduler` | `99.82%`（epoch 59） |
-| `full` | `99.73%`（epoch 43） |
-| `no_aug` | `99.73%`（epoch 58） |
-| `no_label_smoothing` | `99.64%`（epoch 49） |
+| `no_label_smoothing` | `99.73%`（epoch 49） |
 
-补充：本次 6 组消融总耗时约 `290.21s`（约 `4.84` 分钟）。
+补充：本次 6 组消融总耗时约 `289.64s`（约 `4.83` 分钟）。
 
 ### 4.6 CNN 参数对比实验
 
@@ -404,22 +404,22 @@ FC(256→12)
 
 | 学习率 | 最优验证准确率 | 达峰 epoch | 末轮验证准确率 |
 |---|---:|---:|---:|
-| `1e-3` | `99.73%` | 41 | `99.64%` |
-| `2e-3` | `99.73%` | 42 | `99.73%` |
-| `5e-4` | `99.64%` | 56 | `99.46%` |
+| `1e-3` | `99.82%` | 80 | `99.73%` |
+| `2e-3` | `99.82%` | 68 | `99.73%` |
+| `5e-4` | `99.64%` | 46 | `99.46%` |
 
-可以看到，`1e-3` 与 `2e-3` 的峰值验证准确率并列最高，而 `5e-4` 略低。进一步看末轮验证准确率，`2e-3` 高于 `1e-3`，因此在最新配置下更适合作为默认学习率。
+可以看到，`1e-3` 与 `2e-3` 的峰值验证准确率和末轮验证准确率都并列最高，而 `5e-4` 略低。由于本轮 `leaderboard` 将 `1e-3` 排在首位，且其达峰更晚，默认学习率选择 `1e-3`。
 
-因此，代码仓库中 `models/part2/cnn.py` 的默认学习率调整为 `2e-3`；同时根据最新消融结果，默认 `weight_decay` 调整为 `0.0`。
+因此，代码仓库中 `models/part2/cnn.py` 的默认学习率调整为 `1e-3`；同时根据最新消融结果，默认配置回到 `full`，即保留 `weight_decay=1e-4`。
 
 ### 4.7 消融分析
 
 可以得到以下结论：
 
-1. 最新重跑中，`no_weight_decay` 以 `99.91%` 明显高于 `full` 的 `99.73%`，说明当前默认 `weight_decay` 可以去掉。
-2. `no_dropout` 与 `no_scheduler` 都达到 `99.82%`，说明这两项也不是决定性因素，但收益不如“去掉 weight decay”稳定。
-3. `no_aug` 与 `full` 持平，`no_label_smoothing` 最低，说明标签平滑仍更值得保留，而数据增强收益较弱但无明显负效应。
-4. 因此当前默认 CNN 配置保留：增强、Dropout、scheduler、label smoothing，并去掉 `weight_decay`。
+1. 最新重跑中，`full`、`no_aug`、`no_dropout`、`no_weight_decay`、`no_scheduler` 的峰值都达到 `99.82%`，说明该数据集上 CNN 对这些单项改动都不算特别敏感。
+2. `no_label_smoothing` 最低，说明标签平滑仍然是更稳定的保留项。
+3. 在多个方案峰值并列时，`full` 被排在榜首，且配置最完整，因此更适合作为默认主模型配置。
+4. 因此当前默认 CNN 配置保留：增强、Dropout、学习率调度器、标签平滑，以及 `weight_decay=1e-4`。
 
 ## 5. 结果对比与讨论
 
@@ -427,12 +427,12 @@ FC(256→12)
 
 | 模型 | 验证准确率 | 实验设置/来源 |
 |---|---:|---|
-| BP（主模型最新） | `96.67%` | `train/train_log/train_part1.log`（`epochs=150, batch_size=128`，当前默认配置 `bp_base + lr=1e-2`） |
-| BP（消融最优：`bp_base`） | `97.21%` | `ablation/ablation_part1/ablation_results_part1/leaderboard.csv`（`epochs=150, batch_size=128`） |
-| BP（学习率对比最优） | `97.12%` | `contrast/contrast_part1/contrast_results_part1/leaderboard.csv`（`lr=1e-2, epochs=150`） |
-| CNN（主模型最新） | `99.91%` | `train/train_log/train_part2.log`（`epochs=100, batch_size=64`，GPU，当前默认配置 `no_weight_decay + lr=2e-3`） |
-| CNN（消融最优：`no_weight_decay`） | `99.91%` | `ablation/ablation_part2/ablation_results_part2/leaderboard.csv`（`epochs=100`，GPU） |
-| CNN（学习率对比最优） | `99.73%` | `contrast/contrast_part2/contrast_results_part2/leaderboard.csv`（`lr=2e-3, epochs=100`，GPU） |
+| BP（主模型最新） | `96.76%` | `train/train_log/train_part1.log`（`epochs=150, batch_size=128`，当前默认配置 `bp_leaky_relu + lr=1e-2`） |
+| BP（消融最优：`bp_leaky_relu`） | `97.21%` | `ablation/ablation_part1/ablation_results_part1/leaderboard.csv`（`epochs=150, batch_size=128`） |
+| BP（学习率对比最优） | `97.03%` | `contrast/contrast_part1/contrast_results_part1/leaderboard.csv`（`lr=1e-2, epochs=150`） |
+| CNN（主模型最新） | `99.91%` | `train/train_log/train_part2.log`（`epochs=100, batch_size=64`，GPU，当前默认配置 `full + lr=1e-3`） |
+| CNN（消融最优：`full`） | `99.82%` | `ablation/ablation_part2/ablation_results_part2/leaderboard.csv`（`epochs=100`，GPU） |
+| CNN（学习率对比最优） | `99.82%` | `contrast/contrast_part2/contrast_results_part2/leaderboard.csv`（`lr=1e-3, epochs=100`，GPU） |
 
 说明：不同条目对应的训练预算与配置不完全一致，横向比较时应优先比较“同一实验表内”的结果（如同一组消融）。
 
@@ -468,7 +468,7 @@ FC(256→12)
 
 本项目完成了纯 `numpy` BP 神经网络和 `PyTorch` CNN 两部分实验。
 
-在第一部分中，回归任务以很小误差成功拟合 `sin(x)`；分类任务主模型最新验证准确率达到 `96.67%`，组件消融中最高达到 `97.21%`，最新学习率对比中最高达到 `97.12%`。在第二部分中，自实现 CNN 在手写汉字分类任务上达到 `99.91%` 的主模型最新最优验证准确率，而最新学习率对比实验显示 `2e-3` 可达到 `99.73%` 的峰值且末轮表现最佳。
+在第一部分中，回归任务以很小误差成功拟合 `sin(x)`；分类任务主模型最新验证准确率达到 `96.76%`，组件消融中最高达到 `97.21%`，最新学习率对比中最高达到 `97.03%`。在第二部分中，自实现 CNN 在手写汉字分类任务上达到 `99.91%` 的主模型最新最优验证准确率，而最新学习率对比实验显示 `1e-3` 与 `2e-3` 都可达到 `99.82%` 的峰值，其中 `1e-3` 在本轮结果中排名第一。
 
 实验表明：
 
