@@ -1,0 +1,23 @@
+# Python cache
+__pycache__/
+*.py[cod]
+
+# OS/editor noise
+.DS_Store
+.ipynb_checkpoints/
+.codex
+
+# Training / experiment artifacts
+datasets/
+models/part1/results/
+models/part2/results/
+train/train_log/
+ablation/logs/
+ablation/ablation_part1/ablation_results_part1/
+ablation/ablation_part2/ablation_results_part2/
+contrast/logs/
+contrast/contrast_part1/contrast_results_part1/
+contrast/contrast_part2/contrast_results_part2/
+
+# Matplotlib cache
+.matplotlib/
