@@ -27,17 +27,17 @@
 
 建议阅读顺序：
 
-1. [PJ1.pdf](/home/lzx/my_workspace/2026-H-PJ1/PJ1.pdf)
-2. [docs/README.md](/home/lzx/my_workspace/2026-H-PJ1/docs/README.md)
-3. [docs/lab_report.md](/home/lzx/my_workspace/2026-H-PJ1/docs/lab_report.md)
-4. [train/run_all.py](/home/lzx/my_workspace/2026-H-PJ1/train/run_all.py)
-5. [ablation/ablation_part1/run_ablation_part1.py](/home/lzx/my_workspace/2026-H-PJ1/ablation/ablation_part1/run_ablation_part1.py)、[ablation/ablation_part2/run_ablation_part2.py](/home/lzx/my_workspace/2026-H-PJ1/ablation/ablation_part2/run_ablation_part2.py)
-6. [contrast/run_contrast_all.py](/home/lzx/my_workspace/2026-H-PJ1/contrast/run_contrast_all.py)
+1. [PJ1.pdf](/home/lzx/my_workspace/ai_lab/2026-H-PJ1/PJ1.pdf)
+2. [docs/README.md](/home/lzx/my_workspace/ai_lab/2026-H-PJ1/docs/README.md)
+3. [docs/lab_report.md](/home/lzx/my_workspace/ai_lab/2026-H-PJ1/docs/lab_report.md)
+4. [train/run_all.py](/home/lzx/my_workspace/ai_lab/2026-H-PJ1/train/run_all.py)
+5. [ablation/ablation_part1/run_ablation_part1.py](/home/lzx/my_workspace/ai_lab/2026-H-PJ1/ablation/ablation_part1/run_ablation_part1.py)、[ablation/ablation_part2/run_ablation_part2.py](/home/lzx/my_workspace/ai_lab/2026-H-PJ1/ablation/ablation_part2/run_ablation_part2.py)
+6. [contrast/run_contrast_all.py](/home/lzx/my_workspace/ai_lab/2026-H-PJ1/contrast/run_contrast_all.py)
 
 常用入口：
 
 ```bash
-# 推荐复现顺序：先消融，再参数对比，最后主训练
+# 推荐实验顺序：先消融，再参数对比，最后主训练
 python ablation/ablation_part1/run_ablation_part1.py
 python contrast/contrast_part1/run_contrast_part1.py
 python ablation/ablation_part2/run_ablation_part2.py

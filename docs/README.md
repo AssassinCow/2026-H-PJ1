@@ -87,7 +87,7 @@ mv datasets/train_data_update_03-31_v2 datasets/train_data
 ```bash
 cd /home/lzx/my_workspace/2026-H-PJ1
 
-# 推荐复现顺序：先消融确定组件，再做参数对比，最后跑主训练
+# 推荐实验顺序：先消融确定组件，再做参数对比，最后跑主训练
 python ablation/ablation_part1/run_ablation_part1.py
 python contrast/contrast_part1/run_contrast_part1.py
 python ablation/ablation_part2/run_ablation_part2.py
@@ -114,7 +114,7 @@ python contrast/contrast_part2/run_contrast_part2.py
 
 说明：
 
-- 本仓库采用“先消融、后调参、再最终训练”的复现逻辑；主训练脚本中的默认配置来自前述实验结论
+- 本仓库采用“先消融、后调参、再最终训练”的实验组织逻辑；主训练脚本中的默认配置来自前述实验结论
 - `ablation/*` 与 `contrast/*` 都采用同构输出：每个 variant 子目录下含 `metrics.csv` 与 `summary.json`，根目录含 `leaderboard.csv` 与 `summary_all.json`
 - 运行 `train/run_all.py` 时，会自动生成 `train/train_log/train_part1.log`、`train/train_log/train_part2.log`
 - 运行 `ablation/ablation_part1/run_ablation_part1.py`、`ablation/ablation_part2/run_ablation_part2.py` 时，会自动生成 `ablation/logs/ablation_part1.log`、`ablation/logs/ablation_part2.log`
