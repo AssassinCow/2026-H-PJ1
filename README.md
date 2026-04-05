@@ -51,6 +51,12 @@ python contrast/run_contrast_all.py --task all
 
 # 如果只想直接跑主训练
 python train/run_all.py
+
+# 测试集下发后，使用最优权重做推理并导出 csv
+python models/part2/infer.py \
+  --test-dir datasets/test_data \
+  --weights models/part2/results/cnn_best.pth \
+  --output models/part2/results/test_predictions.csv
 ```
 
 数据准备（当前仓库）：
