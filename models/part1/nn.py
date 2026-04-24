@@ -144,7 +144,7 @@ class NeuralNetwork:
             if i > 0:
                 delta = (delta @ self.W[i].T) * self._act_d(self._Z[i-1])
 
-        # 全局梯度范数裁剪（比逐元素裁剪更合理）
+        # 全局梯度范数裁剪
         if self.max_grad_norm > 0:
             total_norm = np.sqrt(sum(np.sum(g*g) for g in dWs + dbs))
             if total_norm > self.max_grad_norm:
@@ -171,6 +171,9 @@ class NeuralNetwork:
         X_val: Optional[np.ndarray] = None,
         y_val: Optional[np.ndarray] = None,
     ) -> dict:
+        if (X_val is None) != (y_val is None):
+            raise ValueError("X_val 和 y_val 必须同时提供，或同时为 None")
+
         m = len(X)
         history: dict = {"train_loss": [], "val_loss": []}
 
@@ -189,7 +192,7 @@ class NeuralNetwork:
             tl = total_loss / n_bat
             history["train_loss"].append(tl)
 
-            if X_val is not None:
+            if X_val is not None and y_val is not None:
                 vl = self._loss(self.forward(X_val), y_val)
                 history["val_loss"].append(vl)
 
@@ -198,7 +201,7 @@ class NeuralNetwork:
 
             if verbose and ep % print_every == 0:
                 msg = f"Epoch {ep:5d}/{epochs}  loss={tl:.6f}"
-                if X_val is not None:
+                if X_val is not None and y_val is not None:
                     msg += f"  val_loss={history['val_loss'][-1]:.6f}"
                 print(msg)
 

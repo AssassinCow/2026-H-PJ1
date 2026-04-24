@@ -36,9 +36,9 @@
 
 ---
 
-## 环境配置（RTX 5090 / CUDA 12.8+）
+## 环境配置
 
-RTX 5090 采用 Blackwell 架构（sm_120），需要 CUDA 12.8 及以上版本，以及对应的 PyTorch nightly 或最新 stable。
+实验使用 Python 3.11 + PyTorch（2.6+）。`requirements-cu128.txt` 提供的是 CUDA 12.8 通道上的 PyTorch wheel，对新架构 GPU 兼容性更好；若使用较旧 CUDA 驱动，可以改用 PyTorch 官方对应 CUDA 版本的索引。
 
 ### 1. 创建 conda 虚拟环境
 
@@ -47,34 +47,29 @@ conda create -n pj1 python=3.11 -y
 conda activate pj1
 ```
 
-### 2. 安装 CUDA Toolkit（若未全局安装）
-
-```bash
-conda install -c nvidia cuda-toolkit=12.8 -y
-```
-
-### 3. 安装依赖（按设备选择）
+### 2. 安装依赖（按设备选择）
 
 ```bash
 # CPU 环境
 pip install -r requirements-cpu.txt
 
-# CUDA 12.8 / Blackwell 环境
+# GPU 环境（CUDA 12.8 通道的 PyTorch）
 pip install -r requirements-cu128.txt
 ```
 
-### 4. 验证 GPU 可用
+### 3. 验证 GPU 可用
 
 ```bash
-python -c "import torch; print(torch.__version__); print(torch.cuda.get_device_name(0))"
+python -c "import torch; print(torch.__version__); print(torch.cuda.is_available())"
 ```
 
 ---
 
 ## 数据准备
 
+在项目根目录（即 `2026-H-PJ1/`）下执行：
+
 ```bash
-cd /home/lzx/my_workspace/2026-H-PJ1
 mkdir -p datasets
 unzip train_data.zip -d datasets
 mv datasets/train_data_update_03-31_v2 datasets/train_data
@@ -84,9 +79,9 @@ mv datasets/train_data_update_03-31_v2 datasets/train_data
 
 ## 运行命令
 
-```bash
-cd /home/lzx/my_workspace/2026-H-PJ1
+以下命令均在项目根目录下执行：
 
+```bash
 # 推荐实验顺序：先消融确定组件，再做参数对比，最后跑主训练
 python ablation/ablation_part1/run_ablation_part1.py
 python contrast/contrast_part1/run_contrast_part1.py

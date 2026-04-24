@@ -49,10 +49,14 @@ python train/run_all.py
 # 也可使用总入口串行跑完参数对比
 python contrast/run_contrast_all.py --task all
 
-# 如果只想直接跑主训练
-python train/run_all.py
-
 # 测试集下发后，使用最优权重做推理并导出 csv
+# Part1 (BP)
+python models/part1/infer.py \
+  --test-dir datasets/test_data \
+  --weights models/part1/results/bp_cls_model.npz \
+  --output models/part1/results/test_predictions.csv
+
+# Part2 (CNN)
 python models/part2/infer.py \
   --test-dir datasets/test_data \
   --weights models/part2/results/cnn_best.pth \

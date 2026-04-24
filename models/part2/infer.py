@@ -6,6 +6,11 @@
         --test-dir datasets/test_data \
         --weights models/part2/results/cnn_best.pth \
         --output models/part2/results/test_predictions.csv
+
+    # 若测试集带真值标签，可额外计算准确率：
+    python models/part2/infer.py \
+        --test-dir datasets/test_data \
+        --labels-csv datasets/test_labels.csv
 """
 from __future__ import annotations
 
@@ -21,6 +26,55 @@ from cnn import RESULTS_DIR, SimpleCNN, build_transforms
 
 
 IMAGE_EXTS = {".bmp", ".png", ".jpg", ".jpeg"}
+
+
+def load_labels_csv(label_csv: str, rel_paths: list[str]) -> list[int]:
+    label_path = Path(label_csv)
+    if not label_path.exists():
+        raise FileNotFoundError(f"标签文件不存在: {label_path}")
+
+    with label_path.open("r", newline="", encoding="utf-8") as f:
+        reader = csv.DictReader(f)
+        if not reader.fieldnames or "image" not in reader.fieldnames or "label" not in reader.fieldnames:
+            raise KeyError("标签 csv 必须包含 image,label 两列")
+
+        label_map: dict[str, int] = {}
+        for row in reader:
+            rel = Path(row["image"]).as_posix()
+            if rel in label_map:
+                raise ValueError(f"标签 csv 中存在重复图片项: {rel}")
+            label = int(row["label"])
+            if not 1 <= label <= 12:
+                raise ValueError(f"标签超出范围 [1,12]: {label}")
+            label_map[rel] = label - 1
+
+    labels = []
+    missing = []
+    for rel in rel_paths:
+        rel = Path(rel).as_posix()
+        if rel not in label_map:
+            missing.append(rel)
+            continue
+        labels.append(label_map[rel])
+
+    if missing:
+        preview = ", ".join(missing[:5])
+        raise KeyError(f"标签 csv 缺少 {len(missing)} 张图片的真值，例如: {preview}")
+
+    return labels
+
+
+def infer_labels_from_dirs(rel_paths: list[str]) -> list[int] | None:
+    labels = []
+    for rel in rel_paths:
+        parts = Path(rel).parts
+        if len(parts) < 2 or not parts[0].isdigit():
+            return None
+        label = int(parts[0])
+        if not 1 <= label <= 12:
+            return None
+        labels.append(label - 1)
+    return labels
 
 
 class TestImageDataset(Dataset):
@@ -55,7 +109,14 @@ class TestImageDataset(Dataset):
 
 
 @torch.no_grad()
-def predict(test_dir: str, weights: str, output: str, batch_size: int = 256, workers: int = 4):
+def predict(
+    test_dir: str,
+    weights: str,
+    output: str,
+    batch_size: int = 256,
+    workers: int = 4,
+    label_csv: str | None = None,
+):
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     _, eval_tf = build_transforms(augment=False)
 
@@ -74,11 +135,19 @@ def predict(test_dir: str, weights: str, output: str, batch_size: int = 256, wor
     model.eval()
 
     rows = []
+    pred_labels = []
     for images, rel_paths in loader:
         logits = model(images.to(device))
         pred = logits.argmax(dim=1).cpu().tolist()
         for rel_path, label_idx in zip(rel_paths, pred):
-            rows.append((rel_path, label_idx + 1))
+            rows.append((Path(rel_path).as_posix(), label_idx + 1))
+            pred_labels.append(label_idx)
+
+    true_labels = (
+        load_labels_csv(label_csv, [rel for rel, _ in rows])
+        if label_csv is not None else
+        infer_labels_from_dirs([rel for rel, _ in rows])
+    )
 
     output_path = Path(output)
     output_path.parent.mkdir(parents=True, exist_ok=True)
@@ -88,6 +157,12 @@ def predict(test_dir: str, weights: str, output: str, batch_size: int = 256, wor
         writer.writerows(rows)
 
     print(f"测试图片数: {len(rows)}")
+    if true_labels is not None:
+        correct = sum(int(p == y) for p, y in zip(pred_labels, true_labels))
+        acc = correct / len(pred_labels)
+        print(f"准确率: {acc * 100:.2f}%")
+    else:
+        print("未提供真值标签，跳过准确率计算")
     print(f"预测结果已保存到: {output_path}")
 
 
@@ -108,6 +183,12 @@ def main():
     )
     parser.add_argument("--batch-size", type=int, default=256)
     parser.add_argument("--workers", type=int, default=4)
+    parser.add_argument(
+        "--labels-csv",
+        type=str,
+        default=None,
+        help="可选真值标签 csv，需包含 image,label 两列；若不提供则尝试从测试目录一级子目录名解析类别",
+    )
     args = parser.parse_args()
 
     predict(
@@ -116,6 +197,7 @@ def main():
         output=args.output,
         batch_size=args.batch_size,
         workers=args.workers,
+        label_csv=args.labels_csv,
     )
 
 
